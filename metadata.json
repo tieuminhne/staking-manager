@@ -1,0 +1,6 @@
+{
+  "name": "Staking Manager",
+  "description": "Poker Cash Staking Manager for Backers and Players",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
