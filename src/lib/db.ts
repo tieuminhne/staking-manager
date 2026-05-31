@@ -194,5 +194,13 @@ export async function seedDatabase() {
        notes: 'Initial stake',
        created_at: new Date().toISOString()
     });
+    return;
+  }
+
+  // Migrate old profiles without username/password
+  const firstProfile = await db.profiles.toCollection().first();
+  if (firstProfile && !firstProfile.username) {
+    await db.delete();
+    window.location.reload();
   }
 }
