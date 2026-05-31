@@ -15,47 +15,29 @@ export default function StakeLevels() {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<StakeLevel | null>(null);
   const [name, setName] = useState('');
-  const [sb, setSb] = useState('');
-  const [bb, setBb] = useState('');
   const [maxBuyin, setMaxBuyin] = useState('');
-  const [bankroll, setBankroll] = useState('');
-  const [moveUp, setMoveUp] = useState('');
-  const [moveDown, setMoveDown] = useState('');
-  const [maxTables, setMaxTables] = useState('');
-  const [stopLoss, setStopLoss] = useState('');
 
   const resetForm = () => {
-    setName(''); setSb(''); setBb(''); setMaxBuyin(''); setBankroll('');
-    setMoveUp(''); setMoveDown(''); setMaxTables(''); setStopLoss('');
+    setName(''); setMaxBuyin('');
     setEditing(null); setShowForm(false);
   };
 
   const openEdit = (s: StakeLevel) => {
     setEditing(s);
     setName(s.name);
-    setSb(String(s.small_blind));
-    setBb(String(s.big_blind));
     setMaxBuyin(String(s.max_buyin));
-    setBankroll(String(s.required_bankroll));
-    setMoveUp(s.move_up_threshold != null ? String(s.move_up_threshold) : '');
-    setMoveDown(s.move_down_threshold != null ? String(s.move_down_threshold) : '');
-    setMaxTables(s.max_tables != null ? String(s.max_tables) : '');
-    setStopLoss(s.stop_loss != null ? String(s.stop_loss) : '');
     setShowForm(true);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const buyin = parseFloat(maxBuyin) || 0;
     const data = {
       name,
-      small_blind: parseFloat(sb) || 0,
-      big_blind: parseFloat(bb) || 0,
-      max_buyin: parseFloat(maxBuyin) || 0,
-      required_bankroll: parseFloat(bankroll) || 0,
-      move_up_threshold: moveUp ? parseFloat(moveUp) : undefined,
-      move_down_threshold: moveDown ? parseFloat(moveDown) : undefined,
-      max_tables: maxTables ? parseInt(maxTables) : undefined,
-      stop_loss: stopLoss ? parseFloat(stopLoss) : undefined,
+      small_blind: 0,
+      big_blind: 0,
+      max_buyin: buyin,
+      required_bankroll: 0,
     };
     if (editing) {
       await db.stakeLevels.update(editing.id, data);
@@ -84,51 +66,23 @@ export default function StakeLevels() {
       {showForm && (
         <Card className="bg-slate-800 border-slate-700 rounded-lg shadow-none">
           <CardHeader className="border-b border-slate-700 pb-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-bold text-white uppercase tracking-tight">{editing ? 'Edit' : 'New'} Stake Level</CardTitle>
+            <CardTitle className="text-sm font-bold text-white uppercase tracking-tight">{editing ? 'Edit' : 'New'} Stake</CardTitle>
             <button onClick={resetForm}><X className="h-4 w-4 text-slate-400 hover:text-white" /></button>
           </CardHeader>
           <CardContent className="pt-4">
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-[10px] uppercase font-bold text-slate-400">Name</Label>
-                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="NL50" className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
+                  <Input value={name} onChange={e => setName(e.target.value)} required placeholder="e.g. NL50" className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Small Blind</Label>
-                  <Input type="number" step="0.01" value={sb} onChange={e => setSb(e.target.value)} required className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Big Blind</Label>
-                  <Input type="number" step="0.01" value={bb} onChange={e => setBb(e.target.value)} required className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Max Buy-in</Label>
-                  <Input type="number" step="0.01" value={maxBuyin} onChange={e => setMaxBuyin(e.target.value)} required className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Required Bankroll</Label>
-                  <Input type="number" step="0.01" value={bankroll} onChange={e => setBankroll(e.target.value)} required className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Stop Loss (buy-ins)</Label>
-                  <Input type="number" step="1" value={stopLoss} onChange={e => setStopLoss(e.target.value)} className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Move Up (buy-ins)</Label>
-                  <Input type="number" step="1" value={moveUp} onChange={e => setMoveUp(e.target.value)} className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Move Down (buy-ins)</Label>
-                  <Input type="number" step="1" value={moveDown} onChange={e => setMoveDown(e.target.value)} className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-[10px] uppercase font-bold text-slate-400">Max Tables</Label>
-                  <Input type="number" step="1" value={maxTables} onChange={e => setMaxTables(e.target.value)} className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
+                  <Label className="text-[10px] uppercase font-bold text-slate-400">Buy-in ($)</Label>
+                  <Input type="number" step="0.01" value={maxBuyin} onChange={e => setMaxBuyin(e.target.value)} required placeholder="e.g. 50" className="bg-slate-900 border-slate-700 font-mono focus-visible:ring-emerald-500" />
                 </div>
               </div>
               <Button type="submit" className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-900/20">
-                {editing ? 'UPDATE' : 'CREATE'} STAKE LEVEL
+                {editing ? 'UPDATE' : 'CREATE'} STAKE
               </Button>
             </form>
           </CardContent>
@@ -137,31 +91,25 @@ export default function StakeLevels() {
 
       <Card className="bg-slate-800 border-slate-700 rounded-lg shadow-none">
         <CardHeader className="border-b border-slate-700 pb-4">
-          <CardTitle className="text-sm font-bold text-white uppercase tracking-tight">All Stake Levels</CardTitle>
+          <CardTitle className="text-sm font-bold text-white uppercase tracking-tight">All Stakes</CardTitle>
         </CardHeader>
         <CardContent className="pt-0">
           <Table>
             <TableHeader>
               <TableRow>
                 <TableHead>Name</TableHead>
-                <TableHead>Blinds</TableHead>
-                <TableHead className="text-right">Max Buy-in</TableHead>
-                <TableHead className="text-right">Bankroll Req.</TableHead>
-                <TableHead className="text-right">Stop Loss</TableHead>
+                <TableHead className="text-right">Buy-in</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {stakes.length === 0 ? (
-                <TableRow><TableCell colSpan={6} className="text-center text-slate-500 h-24">No stake levels defined.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-slate-500 h-24">No stakes defined.</TableCell></TableRow>
               ) : (
                 stakes.map(s => (
                   <TableRow key={s.id}>
                     <TableCell className="font-medium text-white">{s.name}</TableCell>
-                    <TableCell className="text-slate-300 font-mono">${s.small_blind}/${s.big_blind}</TableCell>
                     <TableCell className="text-right text-slate-400 font-mono">{formatC(s.max_buyin)}</TableCell>
-                    <TableCell className="text-right text-slate-400 font-mono">{formatC(s.required_bankroll)}</TableCell>
-                    <TableCell className="text-right text-slate-400 font-mono">{s.stop_loss ?? '-'}</TableCell>
                     <TableCell className="text-right space-x-3">
                       <button onClick={() => openEdit(s)} className="text-blue-400 hover:text-blue-300 text-sm">Edit</button>
                       <button onClick={() => handleDelete(s.id)} className="text-red-400 hover:text-red-300 text-sm">Delete</button>
