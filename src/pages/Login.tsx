@@ -9,19 +9,20 @@ import { Button } from '@/components/ui/button';
 import { Spade } from 'lucide-react';
 
 export default function Login({ onLogin }: { onLogin: (u: Profile) => void }) {
-  const [email, setEmail] = useState('admin@backer.com');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
-    const user = await AuthStore.login(email);
+    const user = await AuthStore.login(username, password);
     if (user) {
       onLogin(user);
       navigate(user.role === 'admin' ? '/admin' : '/player');
     } else {
-      setError('Invalid credentials');
+      setError('Invalid username or password');
     }
   };
 
@@ -40,27 +41,28 @@ export default function Login({ onLogin }: { onLogin: (u: Profile) => void }) {
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-slate-300">Email (Demo: admin@backer.com or player@grinder.com)</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                placeholder="email@example.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+              <Label htmlFor="username" className="text-slate-300">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                placeholder="Enter username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
                 className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500"
                 required
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password" className="text-slate-300">Password</Label>
-              <Input 
-                id="password" 
+              <Input
+                id="password"
                 type="password"
-                value="demo-password"
-                readOnly
-                className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500 text-slate-500"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500"
+                required
               />
-              <p className="text-xs text-slate-500">Demo accounts do not require a real password.</p>
             </div>
             {error && <p className="text-sm text-red-500">{error}</p>}
           </CardContent>

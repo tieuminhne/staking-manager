@@ -9,17 +9,50 @@ export default function AdminSettings() {
   const user = AuthStore.getUser();
   const [fullName, setFullName] = useState(user?.full_name || '');
   const [email, setEmail] = useState(user?.email || '');
+  const [username, setUsername] = useState(user?.username || '');
   const [saved, setSaved] = useState(false);
+
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [pwError, setPwError] = useState('');
+  const [pwSaved, setPwSaved] = useState(false);
 
   const handleSave = async () => {
     if (!user) return;
-    await db.profiles.update(user.id, { full_name: fullName, email });
+    await db.profiles.update(user.id, { full_name: fullName, email, username });
     const updated = await db.profiles.get(user.id);
     if (updated) {
       localStorage.setItem('mock_user', JSON.stringify(updated));
     }
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
+  };
+
+  const handleChangePassword = async () => {
+    if (!user) return;
+    setPwError('');
+    const profile = await db.profiles.get(user.id);
+    if (!profile || profile.password !== currentPassword) {
+      setPwError('Current password is incorrect');
+      return;
+    }
+    if (newPassword.length < 4) {
+      setPwError('New password must be at least 4 characters');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setPwError('Passwords do not match');
+      return;
+    }
+    await db.profiles.update(user.id, { password: newPassword });
+    const updated = await db.profiles.get(user.id);
+    if (updated) localStorage.setItem('mock_user', JSON.stringify(updated));
+    setCurrentPassword('');
+    setNewPassword('');
+    setConfirmPassword('');
+    setPwSaved(true);
+    setTimeout(() => setPwSaved(false), 2000);
   };
 
   const handleResetDB = async () => {
@@ -40,6 +73,10 @@ export default function AdminSettings() {
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
           <div className="space-y-2">
+            <Label className="text-[10px] uppercase font-bold text-slate-400">Username (Login ID)</Label>
+            <Input value={username} onChange={e => setUsername(e.target.value)} className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
+          </div>
+          <div className="space-y-2">
             <Label className="text-[10px] uppercase font-bold text-slate-400">Full Name</Label>
             <Input value={fullName} onChange={e => setFullName(e.target.value)} className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
           </div>
@@ -50,6 +87,33 @@ export default function AdminSettings() {
           <div className="flex items-center gap-3">
             <Button onClick={handleSave} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-900/20">SAVE CHANGES</Button>
             {saved && <span className="text-emerald-400 text-sm">Saved!</span>}
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="bg-slate-800 border-slate-700 rounded-lg shadow-none">
+        <CardHeader className="border-b border-slate-700 pb-4">
+          <CardTitle className="text-sm font-bold text-white uppercase tracking-tight">Change Password</CardTitle>
+        </CardHeader>
+        <CardContent className="pt-4 space-y-4">
+          <div className="space-y-2">
+            <Label className="text-[10px] uppercase font-bold text-slate-400">Current Password</Label>
+            <Input type="password" value={currentPassword} onChange={e => setCurrentPassword(e.target.value)} className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-slate-400">New Password</Label>
+              <Input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)} className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-[10px] uppercase font-bold text-slate-400">Confirm Password</Label>
+              <Input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} className="bg-slate-900 border-slate-700 focus-visible:ring-emerald-500" />
+            </div>
+          </div>
+          {pwError && <p className="text-sm text-red-500">{pwError}</p>}
+          <div className="flex items-center gap-3">
+            <Button onClick={handleChangePassword} className="bg-emerald-600 hover:bg-emerald-500 text-white font-bold shadow-lg shadow-emerald-900/20">CHANGE PASSWORD</Button>
+            {pwSaved && <span className="text-emerald-400 text-sm">Password changed!</span>}
           </div>
         </CardContent>
       </Card>

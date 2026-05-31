@@ -2,6 +2,8 @@ import Dexie, { type Table } from 'dexie';
 
 export interface Profile {
   id: string; // uuid
+  username: string;
+  password: string;
   email: string;
   full_name: string;
   role: 'admin' | 'player';
@@ -103,8 +105,8 @@ export class PokerStakingDB extends Dexie {
 
   constructor() {
     super('PokerStakingDB');
-    this.version(1).stores({
-      profiles: 'id, role, email',
+    this.version(2).stores({
+      profiles: 'id, role, email, username',
       players: 'id, profile_id, status',
       deals: 'id, player_id',
       stakeLevels: 'id, name',
@@ -124,9 +126,9 @@ export const AuthStore = {
     const userJson = localStorage.getItem('mock_user');
     return userJson ? JSON.parse(userJson) as Profile : null;
   },
-  login: async (email: string) => {
-    const user = await db.profiles.where('email').equals(email).first();
-    if (user) {
+  login: async (username: string, password: string) => {
+    const user = await db.profiles.where('username').equals(username).first();
+    if (user && user.password === password) {
       localStorage.setItem('mock_user', JSON.stringify(user));
       return user;
     }
@@ -148,8 +150,8 @@ export async function seedDatabase() {
     const stakeId2 = crypto.randomUUID();
 
     await db.profiles.bulkAdd([
-      { id: adminId, email: 'admin@backer.com', full_name: 'Super Backer', role: 'admin', created_at: new Date().toISOString() },
-      { id: playerId, email: 'player@grinder.com', full_name: 'Daniel Negreanu', role: 'player', created_at: new Date().toISOString() }
+      { id: adminId, username: 'tuongduong', password: '123456', email: 'admin@backer.com', full_name: 'Tuong Duong', role: 'admin', created_at: new Date().toISOString() },
+      { id: playerId, username: 'player1', password: '123456', email: 'player@grinder.com', full_name: 'Daniel Negreanu', role: 'player', created_at: new Date().toISOString() }
     ]);
 
     await db.players.add({

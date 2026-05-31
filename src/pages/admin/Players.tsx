@@ -77,7 +77,8 @@ export default function Players() {
       const profileId = crypto.randomUUID();
       const playerId = crypto.randomUUID();
       await db.profiles.add({
-        id: profileId, email: email || `${nickname.toLowerCase()}@player.com`,
+        id: profileId, username: nickname.toLowerCase(), password: '123456',
+        email: email || `${nickname.toLowerCase()}@player.com`,
         full_name: realName || nickname, role: 'player', created_at: new Date().toISOString()
       });
       await db.players.add({
